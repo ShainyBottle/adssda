@@ -179,11 +179,13 @@ function Library:CreateLib(name, theme)
         end
     end)
 
-    local resizeHandle = Instance.new("Frame")
+    local resizeHandle = Instance.new("TextButton")
     resizeHandle.Size = UDim2.new(0, 16, 0, 16)
     resizeHandle.Position = UDim2.new(1, -16, 1, -16)
     resizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     resizeHandle.BorderSizePixel = 0
+    resizeHandle.Text = ""
+    resizeHandle.AutoButtonColor = false
     resizeHandle.Parent = mainFrame
     resizeHandle.ZIndex = 10
     
@@ -194,26 +196,36 @@ function Library:CreateLib(name, theme)
     local resizing = false
     local minW = 400
     local minH = 250
+    local startMousePos = nil
+    local startFrameSize = nil
     
-    resizeHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            resizing = true
-        end
+    resizeHandle.MouseButton1Down:Connect(function()
+        resizing = true
+        mainFrame.Draggable = false
+        startMousePos = UserInputService:GetMouseLocation()
+        startFrameSize = mainFrame.AbsoluteSize
+        resizeHandle.BackgroundColor3 = CurrentColor
     end)
     
     UserInputService.InputChanged:Connect(function(input)
         if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local mousePos = UserInputService:GetMouseLocation()
-            local framePos = mainFrame.AbsolutePosition
-            local newW = math.max(minW, mousePos.X - framePos.X + 8)
-            local newH = math.max(minH, mousePos.Y - framePos.Y + 8)
+            local deltaX = mousePos.X - startMousePos.X
+            local deltaY = mousePos.Y - startMousePos.Y
+            local newW = math.max(minW, startFrameSize.X + deltaX)
+            local newH = math.max(minH, startFrameSize.Y + deltaY)
             mainFrame.Size = UDim2.new(0, newW, 0, newH)
+            savedSize = Vector2.new(newW, newH)
         end
     end)
     
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            resizing = false
+            if resizing then
+                resizing = false
+                mainFrame.Draggable = true
+                resizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            end
         end
     end)
 
