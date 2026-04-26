@@ -48,14 +48,14 @@ function Library:CreateLib(name, theme)
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
     local isMinimized = false
-    local isFullyHidden = false
+    local isHidden = false
     local savedSize = Vector2.new(600, 400)
-    local savedPosition = Vector2.new(0, 0)
+    local savedPos = Vector2.new(0, 0)
 
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, savedSize.X, 0, savedSize.Y)
-    mainFrame.Position = UDim2.new(0.5, -savedSize.X/2, 0.5, -savedSize.Y/2)
+    mainFrame.Size = UDim2.new(0, 600, 0, 400)
+    mainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
     mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     mainFrame.BorderSizePixel = 0
     mainFrame.Parent = screenGui
@@ -63,80 +63,33 @@ function Library:CreateLib(name, theme)
     mainFrame.Draggable = true
     mainFrame.ClipsDescendants = true
 
-    local minimizeButton = Instance.new("Frame")
-    minimizeButton.Name = "MinimizeButton"
-    minimizeButton.Size = UDim2.new(0, 40, 0, 40)
-    minimizeButton.Position = UDim2.new(0.5, -20, 0.5, -20)
-    minimizeButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    minimizeButton.BorderSizePixel = 1
-    minimizeButton.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    minimizeButton.Parent = screenGui
-    minimizeButton.Visible = false
-    minimizeButton.Active = true
-    minimizeButton.Draggable = true
+    local minBtnFrame = Instance.new("TextButton")
+    minBtnFrame.Name = "MinBtn"
+    minBtnFrame.Size = UDim2.new(0, 40, 0, 40)
+    minBtnFrame.Position = UDim2.new(0.5, -20, 0.5, -20)
+    minBtnFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    minBtnFrame.BorderSizePixel = 1
+    minBtnFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    minBtnFrame.Text = name:sub(1, 1)
+    minBtnFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+    minBtnFrame.TextSize = 20
+    minBtnFrame.Font = Enum.Font.Code
+    minBtnFrame.Parent = screenGui
+    minBtnFrame.Visible = false
+    minBtnFrame.Active = true
+    minBtnFrame.Draggable = true
     
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = minimizeButton
+    local minCorner = Instance.new("UICorner")
+    minCorner.CornerRadius = UDim.new(0, 6)
+    minCorner.Parent = minBtnFrame
     
-    local minimizeIcon = Instance.new("TextLabel")
-    minimizeIcon.Size = UDim2.new(1, 0, 1, 0)
-    minimizeIcon.BackgroundTransparency = 1
-    minimizeIcon.Text = name:sub(1, 1)
-    minimizeIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-    minimizeIcon.TextSize = 20
-    minimizeIcon.Font = Enum.Font.Code
-    minimizeIcon.Parent = minimizeButton
-    
-    minimizeButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if isFullyHidden then
-                return
-            end
-            isMinimized = false
-            mainFrame.Visible = true
-            minimizeButton.Visible = false
-            mainFrame:TweenSize(
-                UDim2.new(0, savedSize.X, 0, savedSize.Y),
-                Enum.EasingDirection.Out,
-                Enum.EasingStyle.Quart,
-                0.3,
-                true
-            )
-        end
-    end)
-    
-    minimizeButton.MouseButton2Click:Connect(function()
-        if isFullyHidden then
-            return
-        end
+    minBtnFrame.MouseButton1Click:Connect(function()
+        if isHidden then return end
         isMinimized = false
-        isFullyHidden = true
         mainFrame.Visible = true
-        minimizeButton.Visible = false
-        mainFrame:TweenSize(
-            UDim2.new(0, savedSize.X, 0, savedSize.Y),
-            Enum.EasingDirection.Out,
-            Enum.EasingStyle.Quart,
-            0.3,
-            true
-        )
-        task.wait(0.3)
-        mainFrame.Visible = false
-    end)
-
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if input.KeyCode == Enum.KeyCode.LeftAlt or input.KeyCode == Enum.KeyCode.RightAlt then
-            if isFullyHidden then
-                isFullyHidden = false
-                isMinimized = false
-                mainFrame.Visible = true
-                minimizeButton.Visible = false
-                mainFrame.Size = UDim2.new(0, savedSize.X, 0, savedSize.Y)
-                mainFrame.Position = UDim2.new(0, savedPosition.X, 0, savedPosition.Y)
-            end
-        end
+        minBtnFrame.Visible = false
+        mainFrame.Size = UDim2.new(0, savedSize.X, 0, savedSize.Y)
+        mainFrame.Position = UDim2.new(0, savedPos.X, 0, savedPos.Y)
     end)
 
     local topBar = Instance.new("Frame")
@@ -195,43 +148,38 @@ function Library:CreateLib(name, theme)
 
     minimizeBtn.MouseButton1Click:Connect(function()
         isMinimized = true
-        savedPosition = Vector2.new(mainFrame.AbsolutePosition.X, mainFrame.AbsolutePosition.Y)
+        savedPos = Vector2.new(mainFrame.AbsolutePosition.X, mainFrame.AbsolutePosition.Y)
         savedSize = Vector2.new(mainFrame.AbsoluteSize.X, mainFrame.AbsoluteSize.Y)
-        mainFrame:TweenSize(
-            UDim2.new(0, 0, 0, 0),
-            Enum.EasingDirection.In,
-            Enum.EasingStyle.Quart,
-            0.3,
-            true
-        )
-        task.wait(0.3)
         mainFrame.Visible = false
-        minimizeButton.Position = UDim2.new(0, savedPosition.X + savedSize.X/2 - 20, 0, savedPosition.Y + savedSize.Y/2 - 20)
-        minimizeButton.Visible = true
+        minBtnFrame.Position = UDim2.new(0, savedPos.X + savedSize.X/2 - 20, 0, savedPos.Y + savedSize.Y/2 - 20)
+        minBtnFrame.Visible = true
     end)
 
     hideBtn.MouseButton1Click:Connect(function()
-        isFullyHidden = true
-        savedPosition = Vector2.new(mainFrame.AbsolutePosition.X, mainFrame.AbsolutePosition.Y)
+        isHidden = true
+        savedPos = Vector2.new(mainFrame.AbsolutePosition.X, mainFrame.AbsolutePosition.Y)
         savedSize = Vector2.new(mainFrame.AbsoluteSize.X, mainFrame.AbsoluteSize.Y)
-        mainFrame:TweenSize(
-            UDim2.new(0, 0, 0, 0),
-            Enum.EasingDirection.In,
-            Enum.EasingStyle.Quart,
-            0.3,
-            true
-        )
-        task.wait(0.3)
         mainFrame.Visible = false
-        minimizeButton.Visible = false
+        minBtnFrame.Visible = false
     end)
 
     closeButton.MouseButton1Click:Connect(function()
         screenGui:Destroy()
     end)
 
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.LeftAlt or input.KeyCode == Enum.KeyCode.RightAlt then
+            if isHidden then
+                isHidden = false
+                mainFrame.Visible = true
+                mainFrame.Size = UDim2.new(0, savedSize.X, 0, savedSize.Y)
+                mainFrame.Position = UDim2.new(0, savedPos.X, 0, savedPos.Y)
+            end
+        end
+    end)
+
     local resizeHandle = Instance.new("Frame")
-    resizeHandle.Name = "ResizeHandle"
     resizeHandle.Size = UDim2.new(0, 16, 0, 16)
     resizeHandle.Position = UDim2.new(1, -16, 1, -16)
     resizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -244,13 +192,12 @@ function Library:CreateLib(name, theme)
     resizeCorner.Parent = resizeHandle
     
     local resizing = false
-    local minWidth = 400
-    local minHeight = 250
+    local minW = 400
+    local minH = 250
     
     resizeHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             resizing = true
-            resizeHandle.BackgroundColor3 = CurrentColor
         end
     end)
     
@@ -258,18 +205,15 @@ function Library:CreateLib(name, theme)
         if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local mousePos = UserInputService:GetMouseLocation()
             local framePos = mainFrame.AbsolutePosition
-            local newWidth = math.max(minWidth, mousePos.X - framePos.X + 8)
-            local newHeight = math.max(minHeight, mousePos.Y - framePos.Y + 8)
-            savedSize = Vector2.new(newWidth, newHeight)
-            mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
-            mainFrame.Position = UDim2.new(0, framePos.X, 0, framePos.Y)
+            local newW = math.max(minW, mousePos.X - framePos.X + 8)
+            local newH = math.max(minH, mousePos.Y - framePos.Y + 8)
+            mainFrame.Size = UDim2.new(0, newW, 0, newH)
         end
     end)
     
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             resizing = false
-            resizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         end
     end)
 
