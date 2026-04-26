@@ -4,12 +4,9 @@ local cloneref = cloneref or function(...)
     return ...
 end
 
-local game = cloneref(game)
-local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local UserInputService = cloneref(game:GetService("UserInputService"))
+local CoreGui = cloneref(game:GetService("CoreGui"))
+local TweenService = cloneref(game:GetService("TweenService"))
 
 local ToggleStates = {}
 local SliderValues = {}
@@ -21,60 +18,40 @@ local TabButtons = {}
 local CurrentColor = Color3.fromRGB(255, 100, 100)
 local CurrentTab = nil
 local TabCounter = 0
-local LastTab = nil
-local LastSection = nil
-
-local function getHiddenUI()
-    local success, result = pcall(function()
-        if gethui then
-            return gethui()
-        elseif get_hidden_gui then
-            return get_hidden_gui()
-        else
-            local hui = CoreGui:FindFirstChild("HUI")
-            if not hui then
-                hui = Instance.new("Folder")
-                hui.Name = "HUI"
-                hui.Parent = CoreGui
-            end
-            return hui
-        end
-    end)
-    return result or CoreGui
-end
-
-local function protectInstance(instance)
-    local success = pcall(function()
-        if protect_gui then
-            protect_gui(instance)
-        elseif syn and syn.protect_gui then
-            syn.protect_gui(instance)
-        end
-    end)
-    if not success then
-        pcall(function()
-            if set_hidden then
-                set_hidden(instance, true)
-            end
-        end)
-    end
-end
 
 function Library:CreateLib(name, theme)
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = name
+    
+    local success, err = pcall(function()
+        if protect_gui then
+            protect_gui(screenGui)
+        elseif syn and syn.protect_gui then
+            syn.protect_gui(screenGui)
+        end
+    end)
+    
+    local success2, err2 = pcall(function()
+        if gethui then
+            screenGui.Parent = gethui()
+        elseif get_hidden_gui then
+            screenGui.Parent = get_hidden_gui()
+        else
+            screenGui.Parent = CoreGui
+        end
+    end)
+    
+    if not pcall(function() return screenGui.Parent end) then
+        screenGui.Parent = CoreGui
+    end
+    
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    protectInstance(screenGui)
-    
-    local hiddenUI = getHiddenUI()
-    screenGui.Parent = hiddenUI
-    
+
     local isMinimized = false
     local isFullyHidden = false
     local savedSize = Vector2.new(600, 400)
     local savedPosition = Vector2.new(0, 0)
-    
+
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
     mainFrame.Size = UDim2.new(0, savedSize.X, 0, savedSize.Y)
@@ -105,9 +82,9 @@ function Library:CreateLib(name, theme)
     local minimizeIcon = Instance.new("TextLabel")
     minimizeIcon.Size = UDim2.new(1, 0, 1, 0)
     minimizeIcon.BackgroundTransparency = 1
-    minimizeIcon.Text = name:sub(1, 2)
+    minimizeIcon.Text = name:sub(1, 1)
     minimizeIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-    minimizeIcon.TextSize = 16
+    minimizeIcon.TextSize = 20
     minimizeIcon.Font = Enum.Font.Code
     minimizeIcon.Parent = minimizeButton
     
@@ -421,8 +398,6 @@ function Library:CreateLib(name, theme)
             UIElements.updateTabSizes()
         end
 
-        LastTab = tabData
-
         local TabObject = {}
 
         function TabObject:NewSection(sectionName)
@@ -614,6 +589,10 @@ function Library:CreateLib(name, theme)
                     end
                 end)
 
+                function SectionObject:GetToggleState()
+                    return toggleState
+                end
+
                 tabData.YPosition = currentY + 60
                 tabData.Frame.CanvasSize = UDim2.new(0, 0, 0, tabData.YPosition + 10)
             end
@@ -737,6 +716,10 @@ function Library:CreateLib(name, theme)
                         dragging = false
                     end
                 end)
+
+                function SectionObject:GetSliderValue()
+                    return currentValue
+                end
 
                 tabData.YPosition = currentY + 80
                 tabData.Frame.CanvasSize = UDim2.new(0, 0, 0, tabData.YPosition + 10)
@@ -1136,55 +1119,10 @@ function Library:CreateLib(name, theme)
                 tabData.Frame.CanvasSize = UDim2.new(0, 0, 0, tabData.YPosition + 10)
             end
 
-            LastSection = SectionObject
             return SectionObject
         end
 
         return TabObject
-    end
-
-    function Library:NewSection(sectionName)
-        if LastTab then
-            return LastTab:NewSection(sectionName)
-        end
-    end
-
-    function Library:GetLastTab()
-        return LastTab
-    end
-
-    function Library:GetLastSection()
-        return LastSection
-    end
-
-    function Library:NewButton(buttonName, description, callback)
-        if LastSection then
-            LastSection:NewButton(buttonName, description, callback)
-        end
-    end
-
-    function Library:NewToggle(toggleName, description, callback)
-        if LastSection then
-            LastSection:NewToggle(toggleName, description, callback)
-        end
-    end
-
-    function Library:NewSlider(sliderName, description, min, max, default, callback)
-        if LastSection then
-            LastSection:NewSlider(sliderName, description, min, max, default, callback)
-        end
-    end
-
-    function Library:NewDropdown(dropdownName, description)
-        if LastSection then
-            return LastSection:NewDropdown(dropdownName, description)
-        end
-    end
-
-    function Library:NewTextBlock(text)
-        if LastSection then
-            LastSection:NewTextBlock(text)
-        end
     end
 
     function Library:GetToggleState(id)
@@ -1193,10 +1131,6 @@ function Library:CreateLib(name, theme)
 
     function Library:GetSliderValue(id)
         return SliderValues[id] or 0
-    end
-    
-    function Library:Destroy()
-        screenGui:Destroy()
     end
 
     return Library
