@@ -10,6 +10,7 @@ local TweenService = cloneref(game:GetService("TweenService"))
 
 local ToggleStates = {}
 local SliderValues = {}
+local InputToggleStates = {}
 local UIElements = {}
 local Sections = {}
 local Tabs = {}
@@ -1079,7 +1080,7 @@ function Library:CreateLib(name, theme)
                 local currentY = tabData.YPosition
 
                 local inputFrame = Instance.new("Frame")
-                inputFrame.Size = UDim2.new(1, 0, 0, 70)
+                inputFrame.Size = UDim2.new(1, 0, 0, 85)
                 inputFrame.Position = UDim2.new(0, 0, 0, currentY)
                 inputFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
                 inputFrame.BorderSizePixel = 2
@@ -1087,8 +1088,8 @@ function Library:CreateLib(name, theme)
                 inputFrame.Parent = container
 
                 local nameLabel = Instance.new("TextLabel")
-                nameLabel.Size = UDim2.new(1, -20, 0, 25)
-                nameLabel.Position = UDim2.new(0, 10, 0, 5)
+                nameLabel.Size = UDim2.new(1, -20, 0, 20)
+                nameLabel.Position = UDim2.new(0, 10, 0, 8)
                 nameLabel.BackgroundTransparency = 1
                 nameLabel.Text = inputName
                 nameLabel.TextColor3 = CurrentColor
@@ -1098,19 +1099,20 @@ function Library:CreateLib(name, theme)
                 nameLabel.Parent = inputFrame
 
                 local descLabel = Instance.new("TextLabel")
-                descLabel.Size = UDim2.new(1, -20, 0, 20)
-                descLabel.Position = UDim2.new(0, 10, 0, 25)
+                descLabel.Size = UDim2.new(1, -20, 0, 16)
+                descLabel.Position = UDim2.new(0, 10, 0, 28)
                 descLabel.BackgroundTransparency = 1
                 descLabel.Text = description or ""
                 descLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
                 descLabel.TextSize = 12
                 descLabel.Font = Enum.Font.Code
                 descLabel.TextXAlignment = Enum.TextXAlignment.Left
+                descLabel.TextWrapped = true
                 descLabel.Parent = inputFrame
 
                 local textBox = Instance.new("TextBox")
                 textBox.Size = UDim2.new(1, -20, 0, 30)
-                textBox.Position = UDim2.new(0, 10, 0, 35)
+                textBox.Position = UDim2.new(0, 10, 0, 48)
                 textBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 textBox.BorderSizePixel = 1
                 textBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
@@ -1123,19 +1125,6 @@ function Library:CreateLib(name, theme)
                 textBox.TextXAlignment = Enum.TextXAlignment.Left
                 textBox.ClearTextOnFocus = false
                 textBox.Parent = inputFrame
-
-                local submitButton = Instance.new("TextButton")
-                submitButton.Size = UDim2.new(1, 0, 1, 0)
-                submitButton.BackgroundTransparency = 1
-                submitButton.Text = ""
-                submitButton.Parent = inputFrame
-
-                submitButton.MouseEnter:Connect(function()
-                    inputFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-                end)
-                submitButton.MouseLeave:Connect(function()
-                    inputFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-                end)
 
                 textBox.FocusLost:Connect(function(enterPressed)
                     if enterPressed and callback then
@@ -1152,7 +1141,131 @@ function Library:CreateLib(name, theme)
                     return textBox.Text
                 end
 
-                tabData.YPosition = currentY + 80
+                tabData.YPosition = currentY + 95
+                tabData.Frame.CanvasSize = UDim2.new(0, 0, 0, tabData.YPosition + 10)
+            end
+
+            function SectionObject:NewInputToggle(inputName, description, callback)
+                local currentY = tabData.YPosition
+                local inputToggleId = tostring(math.random(10000, 99999))
+
+                local inputToggleFrame = Instance.new("Frame")
+                inputToggleFrame.Size = UDim2.new(1, 0, 0, 85)
+                inputToggleFrame.Position = UDim2.new(0, 0, 0, currentY)
+                inputToggleFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+                inputToggleFrame.BorderSizePixel = 2
+                inputToggleFrame.BorderColor3 = Color3.fromRGB(50, 50, 50)
+                inputToggleFrame.Parent = container
+
+                local nameLabel = Instance.new("TextLabel")
+                nameLabel.Size = UDim2.new(1, -80, 0, 20)
+                nameLabel.Position = UDim2.new(0, 10, 0, 8)
+                nameLabel.BackgroundTransparency = 1
+                nameLabel.Text = inputName
+                nameLabel.TextColor3 = CurrentColor
+                nameLabel.TextSize = 16
+                nameLabel.Font = Enum.Font.Code
+                nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+                nameLabel.Parent = inputToggleFrame
+
+                local descLabel = Instance.new("TextLabel")
+                descLabel.Size = UDim2.new(1, -80, 0, 16)
+                descLabel.Position = UDim2.new(0, 10, 0, 28)
+                descLabel.BackgroundTransparency = 1
+                descLabel.Text = description or ""
+                descLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
+                descLabel.TextSize = 12
+                descLabel.Font = Enum.Font.Code
+                descLabel.TextXAlignment = Enum.TextXAlignment.Left
+                descLabel.Parent = inputToggleFrame
+
+                local toggleBg = Instance.new("Frame")
+                toggleBg.Size = UDim2.new(0, 50, 0, 24)
+                toggleBg.Position = UDim2.new(1, -60, 0, 10)
+                toggleBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                toggleBg.BorderSizePixel = 2
+                toggleBg.BorderColor3 = Color3.fromRGB(80, 80, 80)
+                toggleBg.Parent = inputToggleFrame
+
+                local toggleIndicator = Instance.new("Frame")
+                toggleIndicator.Size = UDim2.new(0, 20, 0, 16)
+                toggleIndicator.Position = UDim2.new(0, 2, 0.5, -8)
+                toggleIndicator.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+                toggleIndicator.BorderSizePixel = 1
+                toggleIndicator.BorderColor3 = Color3.fromRGB(140, 140, 140)
+                toggleIndicator.Parent = toggleBg
+
+                local textBox = Instance.new("TextBox")
+                textBox.Size = UDim2.new(1, -20, 0, 30)
+                textBox.Position = UDim2.new(0, 10, 0, 48)
+                textBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                textBox.BorderSizePixel = 1
+                textBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
+                textBox.Text = ""
+                textBox.PlaceholderText = "Enter text..."
+                textBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+                textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                textBox.TextSize = 14
+                textBox.Font = Enum.Font.Code
+                textBox.TextXAlignment = Enum.TextXAlignment.Left
+                textBox.ClearTextOnFocus = false
+                textBox.Parent = inputToggleFrame
+
+                local toggleState = false
+                InputToggleStates[inputToggleId] = {state = false, text = ""}
+
+                local function updateToggle()
+                    if toggleState then
+                        toggleIndicator.BackgroundColor3 = CurrentColor
+                        toggleIndicator.Position = UDim2.new(1, -22, 0.5, -8)
+                        -- Активируем TextBox
+                        textBox.TextEditable = true
+                        textBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                        textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    else
+                        toggleIndicator.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+                        toggleIndicator.Position = UDim2.new(0, 2, 0.5, -8)
+                        -- Деактивируем TextBox
+                        textBox.TextEditable = false
+                        textBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+                        textBox.TextColor3 = Color3.fromRGB(100, 100, 100)
+                    end
+                end
+
+                local toggleButton = Instance.new("TextButton")
+                toggleButton.Size = UDim2.new(0, 50, 0, 24)
+                toggleButton.Position = UDim2.new(1, -60, 0, 10)
+                toggleButton.BackgroundTransparency = 1
+                toggleButton.Text = ""
+                toggleButton.ZIndex = 2
+                toggleButton.Parent = inputToggleFrame
+
+                toggleButton.MouseButton1Click:Connect(function()
+                    toggleState = not toggleState
+                    InputToggleStates[inputToggleId] = {state = toggleState, text = textBox.Text}
+                    updateToggle()
+                    if callback then
+                        local success, err = pcall(function()
+                            if toggleState then
+                                callback(textBox.Text, toggleState)
+                            else
+                                callback(nil, toggleState)
+                            end
+                        end)
+                        if not success then
+                            warn("Error in input toggle callback: " .. err)
+                        end
+                    end
+                end)
+
+                -- Изначально деактивируем TextBox
+                updateToggle()
+
+                function SectionObject:GetInputToggleState()
+                    return toggleState, textBox.Text
+                end
+
+                tabData.YPosition = currentY + 95
                 tabData.Frame.CanvasSize = UDim2.new(0, 0, 0, tabData.YPosition + 10)
             end
 
@@ -1168,6 +1281,10 @@ function Library:CreateLib(name, theme)
 
     function Library:GetSliderValue(id)
         return SliderValues[id] or 0
+    end
+
+    function Library:GetInputToggleState(id)
+        return InputToggleStates[id] or {state = false, text = ""}
     end
 
     return Library
