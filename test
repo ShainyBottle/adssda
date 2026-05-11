@@ -7,6 +7,7 @@ end
 local UserInputService = cloneref(game:GetService("UserInputService"))
 local CoreGui = cloneref(game:GetService("CoreGui"))
 local TweenService = cloneref(game:GetService("TweenService"))
+local TextService = cloneref(game:GetService("TextService"))
 
 local ToggleStates = {}
 local SliderValues = {}
@@ -1181,7 +1182,7 @@ function Library:CreateLib(name, theme)
 
                 local toggleBg = Instance.new("Frame")
                 toggleBg.Size = UDim2.new(0, 50, 0, 24)
-                toggleBg.Position = UDim2.new(1, -60, 0, 10)
+                toggleBg.Position = UDim2.new(1, -60, 0, 6)
                 toggleBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 toggleBg.BorderSizePixel = 2
                 toggleBg.BorderColor3 = Color3.fromRGB(80, 80, 80)
@@ -1218,23 +1219,19 @@ function Library:CreateLib(name, theme)
                     if toggleState then
                         toggleIndicator.BackgroundColor3 = CurrentColor
                         toggleIndicator.Position = UDim2.new(1, -22, 0.5, -8)
-                        -- Активируем TextBox
+                        textBox.PlaceholderText = "Enter text..."
                         textBox.TextEditable = true
-                        textBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                        textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
                     else
                         toggleIndicator.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
                         toggleIndicator.Position = UDim2.new(0, 2, 0.5, -8)
-                        -- Деактивируем TextBox
+                        textBox.PlaceholderText = "Toggle ON to type"
                         textBox.TextEditable = false
-                        textBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                        textBox.TextColor3 = Color3.fromRGB(100, 100, 100)
                     end
                 end
 
                 local toggleButton = Instance.new("TextButton")
                 toggleButton.Size = UDim2.new(0, 50, 0, 24)
-                toggleButton.Position = UDim2.new(1, -60, 0, 10)
+                toggleButton.Position = UDim2.new(1, -60, 0, 6)
                 toggleButton.BackgroundTransparency = 1
                 toggleButton.Text = ""
                 toggleButton.ZIndex = 2
@@ -1246,11 +1243,7 @@ function Library:CreateLib(name, theme)
                     updateToggle()
                     if callback then
                         local success, err = pcall(function()
-                            if toggleState then
-                                callback(textBox.Text, toggleState)
-                            else
-                                callback(nil, toggleState)
-                            end
+                            callback(textBox.Text, toggleState)
                         end)
                         if not success then
                             warn("Error in input toggle callback: " .. err)
@@ -1258,7 +1251,6 @@ function Library:CreateLib(name, theme)
                     end
                 end)
 
-                -- Изначально деактивируем TextBox
                 updateToggle()
 
                 function SectionObject:GetInputToggleState()
@@ -1266,6 +1258,188 @@ function Library:CreateLib(name, theme)
                 end
 
                 tabData.YPosition = currentY + 95
+                tabData.Frame.CanvasSize = UDim2.new(0, 0, 0, tabData.YPosition + 10)
+            end
+
+            function SectionObject:NewChat(chatName, description)
+                local currentY = tabData.YPosition
+
+                local chatFrame = Instance.new("Frame")
+                chatFrame.Size = UDim2.new(1, 0, 0, 300)
+                chatFrame.Position = UDim2.new(0, 0, 0, currentY)
+                chatFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+                chatFrame.BorderSizePixel = 2
+                chatFrame.BorderColor3 = Color3.fromRGB(50, 50, 50)
+                chatFrame.Parent = container
+
+                local nameLabel = Instance.new("TextLabel")
+                nameLabel.Size = UDim2.new(1, -20, 0, 20)
+                nameLabel.Position = UDim2.new(0, 10, 0, 8)
+                nameLabel.BackgroundTransparency = 1
+                nameLabel.Text = chatName
+                nameLabel.TextColor3 = CurrentColor
+                nameLabel.TextSize = 16
+                nameLabel.Font = Enum.Font.Code
+                nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+                nameLabel.Parent = chatFrame
+
+                local descLabel = Instance.new("TextLabel")
+                descLabel.Size = UDim2.new(1, -20, 0, 16)
+                descLabel.Position = UDim2.new(0, 10, 0, 28)
+                descLabel.BackgroundTransparency = 1
+                descLabel.Text = description or ""
+                descLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
+                descLabel.TextSize = 12
+                descLabel.Font = Enum.Font.Code
+                descLabel.TextXAlignment = Enum.TextXAlignment.Left
+                descLabel.Parent = chatFrame
+
+                local messagesFrame = Instance.new("ScrollingFrame")
+                messagesFrame.Size = UDim2.new(1, -20, 0, 170)
+                messagesFrame.Position = UDim2.new(0, 10, 0, 48)
+                messagesFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+                messagesFrame.BorderSizePixel = 1
+                messagesFrame.BorderColor3 = Color3.fromRGB(80, 80, 80)
+                messagesFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+                messagesFrame.ScrollBarThickness = 6
+                messagesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+                messagesFrame.Parent = chatFrame
+
+                local messagesList = Instance.new("UIListLayout")
+                messagesList.FillDirection = Enum.FillDirection.Vertical
+                messagesList.SortOrder = Enum.SortOrder.LayoutOrder
+                messagesList.Padding = UDim.new(0, 4)
+                messagesList.Parent = messagesFrame
+
+                local messagesPadding = Instance.new("UIPadding")
+                messagesPadding.PaddingLeft = UDim.new(0, 5)
+                messagesPadding.PaddingRight = UDim.new(0, 5)
+                messagesPadding.PaddingTop = UDim.new(0, 5)
+                messagesPadding.PaddingBottom = UDim.new(0, 5)
+                messagesPadding.Parent = messagesFrame
+
+                local nickBox = Instance.new("TextBox")
+                nickBox.Size = UDim2.new(0.25, -5, 0, 26)
+                nickBox.Position = UDim2.new(0, 10, 0, 225)
+                nickBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                nickBox.BorderSizePixel = 1
+                nickBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
+                nickBox.Text = ""
+                nickBox.PlaceholderText = "Nickname"
+                nickBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+                nickBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                nickBox.TextSize = 14
+                nickBox.Font = Enum.Font.Code
+                nickBox.TextXAlignment = Enum.TextXAlignment.Left
+                nickBox.ClearTextOnFocus = false
+                nickBox.Parent = chatFrame
+
+                local messageBox = Instance.new("TextBox")
+                messageBox.Size = UDim2.new(0.55, -10, 0, 26)
+                messageBox.Position = UDim2.new(0.25, 15, 0, 225)
+                messageBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                messageBox.BorderSizePixel = 1
+                messageBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
+                messageBox.Text = ""
+                messageBox.PlaceholderText = "Message"
+                messageBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+                messageBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                messageBox.TextSize = 14
+                messageBox.Font = Enum.Font.Code
+                messageBox.TextXAlignment = Enum.TextXAlignment.Left
+                messageBox.ClearTextOnFocus = false
+                messageBox.Parent = chatFrame
+
+                local sendButton = Instance.new("TextButton")
+                sendButton.Size = UDim2.new(0.2, -10, 0, 26)
+                sendButton.Position = UDim2.new(0.8, 10, 0, 225)
+                sendButton.BackgroundColor3 = CurrentColor
+                sendButton.BorderSizePixel = 0
+                sendButton.Text = "SEND"
+                sendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                sendButton.TextSize = 14
+                sendButton.Font = Enum.Font.Code
+                sendButton.Parent = chatFrame
+
+                local messages = {}
+
+                local function addMessage(nick, msg)
+                    local isSelf = (nick == nickBox.Text)
+                    local color = isSelf and CurrentColor or Color3.fromRGB(180, 180, 180)
+                    
+                    local msgFrame = Instance.new("Frame")
+                    msgFrame.Size = UDim2.new(1, 0, 0, 0)
+                    msgFrame.BackgroundTransparency = 1
+                    msgFrame.Parent = messagesFrame
+
+                    local msgLabel = Instance.new("TextLabel")
+                    msgLabel.Size = UDim2.new(1, 0, 0, 18)
+                    msgLabel.BackgroundTransparency = 1
+                    msgLabel.Text = "[" .. os.date("%H:%M:%S") .. "] " .. nick .. ": " .. msg
+                    msgLabel.TextColor3 = color
+                    msgLabel.TextSize = 13
+                    msgLabel.Font = Enum.Font.Code
+                    msgLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    msgLabel.TextWrapped = true
+                    msgLabel.Parent = msgFrame
+
+                    local textBounds = TextService:GetTextSize(
+                        msgLabel.Text,
+                        msgLabel.TextSize,
+                        msgLabel.Font,
+                        Vector2.new(messagesFrame.AbsoluteSize.X - 20, math.huge)
+                    )
+                    msgLabel.Size = UDim2.new(1, 0, 0, textBounds.Y)
+                    msgFrame.Size = UDim2.new(1, 0, 0, textBounds.Y + 2)
+
+                    table.insert(messages, msgFrame)
+
+                    if #messages > 50 then
+                        messages[1]:Destroy()
+                        table.remove(messages, 1)
+                    end
+
+                    local totalHeight = 0
+                    for _, frame in ipairs(messages) do
+                        totalHeight = totalHeight + frame.Size.Y.Offset + 4
+                    end
+                    messagesFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 10)
+
+                    messagesFrame.CanvasPosition = Vector2.new(0, messagesFrame.CanvasSize.Y.Offset)
+                end
+
+                local function sendMessage()
+                    local nick = nickBox.Text
+                    local msg = messageBox.Text
+
+                    if nick ~= "" and msg ~= "" then
+                        addMessage(nick, msg)
+                        messageBox.Text = ""
+                    elseif nick == "" then
+                        addMessage("SYSTEM", "Please enter a nickname first!")
+                    end
+                end
+
+                sendButton.MouseButton1Click:Connect(sendMessage)
+
+                messageBox.FocusLost:Connect(function(enterPressed)
+                    if enterPressed then
+                        sendMessage()
+                    end
+                end)
+
+                function SectionObject:GetMessages()
+                    local msgs = {}
+                    for _, frame in ipairs(messages) do
+                        local label = frame:FindFirstChildOfClass("TextLabel")
+                        if label then
+                            table.insert(msgs, label.Text)
+                        end
+                    end
+                    return msgs
+                end
+
+                tabData.YPosition = currentY + 310
                 tabData.Frame.CanvasSize = UDim2.new(0, 0, 0, tabData.YPosition + 10)
             end
 
