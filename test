@@ -1240,7 +1240,7 @@ function Library:CreateLib(name, theme)
                     updateToggle()
                     if callback then
                         local success, err = pcall(function()
-                            callback(textBox.Text, toggleState)
+                            callback(textBox, toggleState)
                         end)
                         if not success then
                             warn("Error in input toggle callback: " .. err)
