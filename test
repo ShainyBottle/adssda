@@ -1210,6 +1210,7 @@ function Library:CreateLib(name, theme)
                 textBox.Font = Enum.Font.Code
                 textBox.TextXAlignment = Enum.TextXAlignment.Left
                 textBox.ClearTextOnFocus = false
+                textBox.TextEditable = true
                 textBox.Parent = inputToggleFrame
 
                 local toggleState = false
@@ -1219,13 +1220,9 @@ function Library:CreateLib(name, theme)
                     if toggleState then
                         toggleIndicator.BackgroundColor3 = CurrentColor
                         toggleIndicator.Position = UDim2.new(1, -22, 0.5, -8)
-                        textBox.PlaceholderText = "Enter text..."
-                        textBox.TextEditable = true
                     else
                         toggleIndicator.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
                         toggleIndicator.Position = UDim2.new(0, 2, 0.5, -8)
-                        textBox.PlaceholderText = "Toggle ON to type"
-                        textBox.TextEditable = false
                     end
                 end
 
